@@ -47,4 +47,16 @@ class FirebaseStorageRepo implements StorageRepo {
       return null;
     }
   }
+
+  @override
+  Future<String?> uploadPostImageMobile(String path, String fileName) {
+    // TODO: implement uploadPostImageMobile
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> uploadPostImageWeb(Uint8List fileBytes, String fileName) {
+    // TODO: implement uploadPostImageWeb
+    throw UnimplementedError();
+  }
 }
