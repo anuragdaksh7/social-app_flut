@@ -6,10 +6,12 @@ import 'package:social/features/auth/presentation/components/my_text_field.dart'
 import 'package:social/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:social/features/post/domain/entities/comment.dart';
 import 'package:social/features/post/domain/entities/post.dart';
+import 'package:social/features/post/presentation/components/comment_tile.dart';
 import 'package:social/features/post/presentation/cubits/post_cubit.dart';
 import 'package:social/features/post/presentation/cubits/post_states.dart';
 import 'package:social/features/profile/domain/entities/profile_user.dart';
 import 'package:social/features/profile/presentation/cubits/profile_cubit.dart';
+import 'package:social/features/profile/presentation/pages/profile_page.dart';
 
 class PostTile extends StatefulWidget {
   final Post post;
@@ -107,8 +109,8 @@ class _PostTileState extends State<PostTile> {
     final newComment = Comment(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       postId: widget.post.id,
-      userId: widget.post.userId,
-      userName: widget.post.userName,
+      userId: currentUser!.uid,
+      userName: currentUser!.name,
       text: commentTextController.text,
       timestamp: DateTime.now(),
     );
@@ -149,49 +151,56 @@ class _PostTileState extends State<PostTile> {
       color: Theme.of(context).colorScheme.secondary,
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                postUser?.profileImageUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: postUser!.profileImageUrl,
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.dangerous),
-                        imageBuilder: (context, imageProvider) => Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: imageProvider,
-                              fit: BoxFit.cover,
+          GestureDetector(
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        ProfilePage(uid: widget.post.userId))),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  postUser?.profileImageUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: postUser!.profileImageUrl,
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.dangerous),
+                          imageBuilder: (context, imageProvider) => Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                        ),
-                      )
-                    : const Icon(Icons.person),
-                SizedBox(
-                  width: 10,
-                ),
-                Text(
-                  widget.post.userName,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.inversePrimary,
-                    fontWeight: FontWeight.bold,
+                        )
+                      : const Icon(Icons.person),
+                  SizedBox(
+                    width: 10,
                   ),
-                ),
-                Spacer(),
-                if (isOwnPost)
-                  GestureDetector(
-                    onTap: showOptions,
-                    child: Icon(
-                      Icons.delete,
-                      color: Theme.of(context).colorScheme.primary,
+                  Text(
+                    widget.post.userName,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.inversePrimary,
+                      fontWeight: FontWeight.bold,
                     ),
-                  )
-              ],
+                  ),
+                  Spacer(),
+                  if (isOwnPost)
+                    GestureDetector(
+                      onTap: showOptions,
+                      child: Icon(
+                        Icons.delete,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    )
+                ],
+              ),
             ),
           ),
           CachedNetworkImage(
@@ -257,7 +266,7 @@ class _PostTileState extends State<PostTile> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Row(
               children: [
                 Text(widget.post.userName,
@@ -285,12 +294,7 @@ class _PostTileState extends State<PostTile> {
                   itemBuilder: (context, index) {
                     final comment = post.comments[index];
 
-                    return Row(
-                      children: [
-                        Text(comment.userName),
-                        Text(comment.text),
-                      ],
-                    );
+                    return CommentTile(comment: comment);
                   },
                 );
               }
@@ -303,9 +307,7 @@ class _PostTileState extends State<PostTile> {
                 child: Text(state.message),
               );
             }
-            return const Center(
-              child: Text("Something went wrong..."),
-            );
+            return const SizedBox();
           })
         ],
       ),
