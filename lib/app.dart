@@ -9,8 +9,12 @@ import 'package:social/features/post/data/firebase_post_repo.dart';
 import 'package:social/features/post/presentation/cubits/post_cubit.dart';
 import 'package:social/features/profile/data/firebase_profile_repo.dart';
 import 'package:social/features/profile/presentation/cubits/profile_cubit.dart';
+import 'package:social/features/search/data/firebase_search_repo.dart';
+import 'package:social/features/search/presentation/cubits/search_cubit.dart';
 import 'package:social/features/storage/data/cloudinary_storage_repo.dart';
+import 'package:social/themes/dark_mode.dart';
 import 'package:social/themes/light_mode.dart';
+import 'package:social/themes/theme_cubit.dart';
 
 class MyApp extends StatelessWidget {
   final authRepo = FirebaseAuthRepo();
@@ -18,6 +22,7 @@ class MyApp extends StatelessWidget {
   // final storageRepo = FirebaseStorageRepo();
   final storageRepo = CloudinaryStorageRepo();
   final postRepo = FirebasePostRepo();
+  final searchRepo = FirebaseSearchRepo();
 
   MyApp({super.key});
 
@@ -30,17 +35,21 @@ class MyApp extends StatelessWidget {
           ),
           BlocProvider<ProfileCubit>(
               create: (context) => ProfileCubit(
-                    profileRepo: profileRepo,
-                    storageRepo: storageRepo
-                  )),
-          BlocProvider<PostCubit>(create: (context) => PostCubit(postRepo: postRepo, storageRepo: storageRepo))
+                  profileRepo: profileRepo, storageRepo: storageRepo)),
+          BlocProvider<PostCubit>(
+              create: (context) =>
+                  PostCubit(postRepo: postRepo, storageRepo: storageRepo)),
+          BlocProvider<SearchCubit>(
+            create: (context) => SearchCubit(searchRepo: searchRepo),
+          ),
+          BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
         ],
-        child: MaterialApp(
+        child: BlocBuilder<ThemeCubit, ThemeData>(
+          builder: (context, currentTheme) => MaterialApp(
             debugShowCheckedModeBanner: false,
-            theme: lightMode,
+            theme: currentTheme,
             home: BlocConsumer<AuthCubit, AuthState>(
               builder: (context, authState) {
-
                 if (authState is Unauthenticated) {
                   return const AuthPage();
                 } else if (authState is Authenticated) {
@@ -63,6 +72,8 @@ class MyApp extends StatelessWidget {
                   );
                 }
               },
-            )));
+            ),
+          ),
+        ));
   }
 }
